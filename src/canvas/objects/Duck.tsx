@@ -5,10 +5,11 @@ import { useAnimations, useGLTF, useTexture } from "@react-three/drei";
 import { useInteractiveObject } from "@/hooks/useInteractiveObject";
 import createShadowMaterial from "./materials/shadowMat";
 import ObjectLabel from "@/components/ObjectLabel";
-import { useFrame, type ThreeEvent } from "@react-three/fiber";
+import type { ThreeEvent } from "@react-three/fiber";
 import { useInteractionStore, usePlaygroundStore } from "@/store/useInteractionStore";
 import createHologramMat from "./materials/hologramMat";
 import { uniform } from "three/tsl";
+import { disposeReplacedMaterials, trackReplacedMaterials } from "./materialUtils";
 
 const FADE = 0.4;
 
@@ -23,7 +24,9 @@ export default function Duck({ register, onClick, ...handlers }: Props) {
   const isPlayground = useInteractionStore((s) => s.selected === "playground");
   const { scene, animations } = useGLTF("/models/duck_anime.glb");
   const { actions, mixer } = useAnimations(animations, scene);
-  const { groupRef, center, opacityProgress } = useInteractiveObject(scene, register);
+  const { groupRef, center, opacityProgress } = useInteractiveObject(scene, register, {
+    selectionProgress: swipeProgress.current
+  });
   const setIdx = usePlaygroundStore((s) => s.setIdx);
 
   // --- Textures ---
@@ -119,16 +122,13 @@ export default function Duck({ register, onClick, ...handlers }: Props) {
     }
   }, [isPlayground]);
 
-  // --- Render Loop (UseFrame) ---
-  useFrame((_, dt) => {
-    const target = isPlaygroundRef.current ? 1 : 0;
-    swipeProgress.current.value = THREE.MathUtils.damp(swipeProgress.current.value, target, 8, dt);
-  });
-
   // --- Material Assignment ---
   useEffect(() => {
+    const replacedMaterials = new Set<THREE.Material>();
+
     scene.traverse((v) => {
       if (!(v instanceof THREE.Mesh)) return;
+      trackReplacedMaterials(replacedMaterials, v.material);
 
       if (v.name === "shadow") {
         const mat = createShadowMaterial(opacityProgress as THREE.UniformNode<"float", number>, shadowMap);
@@ -152,6 +152,8 @@ export default function Duck({ register, onClick, ...handlers }: Props) {
         v.material = nodeMat;
       }
     });
+
+    disposeReplacedMaterials(replacedMaterials);
   }, []);
 
   const handleClick = useCallback(

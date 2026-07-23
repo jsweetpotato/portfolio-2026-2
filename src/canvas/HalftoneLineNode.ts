@@ -1,4 +1,24 @@
-import { Fn, float, vec2, vec4, uniform, screenUV, texture, sin, cos, sqrt, pow, abs, mod, floor, clamp, mix, dot, If, step } from "three/tsl";
+import {
+  Fn,
+  float,
+  vec2,
+  vec4,
+  uniform,
+  screenUV,
+  texture,
+  sin,
+  cos,
+  sqrt,
+  pow,
+  abs,
+  mod,
+  floor,
+  clamp,
+  mix,
+  dot,
+  If,
+  step,
+} from "three/tsl";
 import * as THREE from "three/webgpu";
 
 /**
@@ -51,7 +71,9 @@ export function halftoneLineNode(outputNode: any) {
     const offset_y = ny.mul(dot_normal);
 
     // offset_normal = mod(|offset|, step)
-    const offset_normal = sqrt(offset_x.mul(offset_x).add(offset_y.mul(offset_y))).mod(cellSize);
+    const offset_normal = sqrt(
+      offset_x.mul(offset_x).add(offset_y.mul(offset_y)),
+    ).mod(cellSize);
 
     // normal_dir = dot_normal < 0 ? 1 : -1
     // TSL에서 조건부: sign 사용 (음수→-1, 양수→1) → 반전
@@ -62,18 +84,28 @@ export function halftoneLineNode(outputNode: any) {
     // smoothstep 대신 mix+step으로 구현
     // offset_normal < threshold → isBelow = 1, else = 0
     const isBelow_n = float(1).sub(step(threshold, offset_normal)); // step(edge,x): x>=edge→1
-    const normal_scale_abs = mix(cellSize.sub(offset_normal), offset_normal.negate(), isBelow_n);
+    const normal_scale_abs = mix(
+      cellSize.sub(offset_normal),
+      offset_normal.negate(),
+      isBelow_n,
+    );
     const normal_scale = normal_scale_abs.mul(normal_dir);
 
     // offset_line = mod(|(p - offset) - origin|, step)
     const remain_x = px.sub(offset_x);
     const remain_y = py.sub(offset_y);
-    const offset_line = sqrt(remain_x.mul(remain_x).add(remain_y.mul(remain_y))).mod(cellSize);
+    const offset_line = sqrt(
+      remain_x.mul(remain_x).add(remain_y.mul(remain_y)),
+    ).mod(cellSize);
 
     const line_dir = dot_line.sign().negate();
 
     const isBelow_l = float(1).sub(step(threshold, offset_line));
-    const line_scale_abs = mix(cellSize.sub(offset_line), offset_line.negate(), isBelow_l);
+    const line_scale_abs = mix(
+      cellSize.sub(offset_line),
+      offset_line.negate(),
+      isBelow_l,
+    );
     const line_scale = line_scale_abs.mul(line_dir);
 
     // p1 = p - n * normal_scale + n_perp * line_scale
@@ -84,7 +116,9 @@ export function halftoneLineNode(outputNode: any) {
     const p1y = py.sub(ny.mul(normal_scale)).sub(nx.mul(line_scale));
 
     // p2, p3, p4 (인접 셀 중심)
-    const normal_step = normal_dir.mul(mix(cellSize, cellSize.negate(), isBelow_n));
+    const normal_step = normal_dir.mul(
+      mix(cellSize, cellSize.negate(), isBelow_n),
+    );
     const line_step = line_dir.mul(mix(cellSize, cellSize.negate(), isBelow_l));
 
     const p2x = p1x.sub(nx.mul(normal_step));
@@ -102,10 +136,22 @@ export function halftoneLineNode(outputNode: any) {
     const samp4 = texture(outputNode, vec2(p4x.div(uWidth), p4y.div(uHeight)));
 
     // ── luminance (greyscale) ─────────────────────────────────────────────
-    const lum1 = samp1.r.mul(0.299).add(samp1.g.mul(0.587)).add(samp1.b.mul(0.114));
-    const lum2 = samp2.r.mul(0.299).add(samp2.g.mul(0.587)).add(samp2.b.mul(0.114));
-    const lum3 = samp3.r.mul(0.299).add(samp3.g.mul(0.587)).add(samp3.b.mul(0.114));
-    const lum4 = samp4.r.mul(0.299).add(samp4.g.mul(0.587)).add(samp4.b.mul(0.114));
+    const lum1 = samp1.r
+      .mul(0.299)
+      .add(samp1.g.mul(0.587))
+      .add(samp1.b.mul(0.114));
+    const lum2 = samp2.r
+      .mul(0.299)
+      .add(samp2.g.mul(0.587))
+      .add(samp2.b.mul(0.114));
+    const lum3 = samp3.r
+      .mul(0.299)
+      .add(samp3.g.mul(0.587))
+      .add(samp3.b.mul(0.114));
+    const lum4 = samp4.r
+      .mul(0.299)
+      .add(samp4.g.mul(0.587))
+      .add(samp4.b.mul(0.114));
 
     // ── distanceToDotRadius LINE 인라인 ──────────────────────────────────
     // rad = pow(abs(channel), 1.5) * radius
@@ -130,7 +176,7 @@ export function halftoneLineNode(outputNode: any) {
       nx
         .mul(dp1)
         .mul(nx.mul(dp1))
-        .add(ny.mul(dp1).mul(ny.mul(dp1)))
+        .add(ny.mul(dp1).mul(ny.mul(dp1))),
     );
 
     const dp2 = p2x.sub(px).mul(nx).add(p2y.sub(py).mul(ny));
@@ -138,7 +184,7 @@ export function halftoneLineNode(outputNode: any) {
       nx
         .mul(dp2)
         .mul(nx.mul(dp2))
-        .add(ny.mul(dp2).mul(ny.mul(dp2)))
+        .add(ny.mul(dp2).mul(ny.mul(dp2))),
     );
 
     const dp3 = p3x.sub(px).mul(nx).add(p3y.sub(py).mul(ny));
@@ -146,7 +192,7 @@ export function halftoneLineNode(outputNode: any) {
       nx
         .mul(dp3)
         .mul(nx.mul(dp3))
-        .add(ny.mul(dp3).mul(ny.mul(dp3)))
+        .add(ny.mul(dp3).mul(ny.mul(dp3))),
     );
 
     const dp4 = p4x.sub(px).mul(nx).add(p4y.sub(py).mul(ny));
@@ -154,7 +200,7 @@ export function halftoneLineNode(outputNode: any) {
       nx
         .mul(dp4)
         .mul(nx.mul(dp4))
-        .add(ny.mul(dp4).mul(ny.mul(dp4)))
+        .add(ny.mul(dp4).mul(ny.mul(dp4))),
     );
 
     // aa = radius < 2.5 ? radius * 0.5 : 1.25
@@ -176,15 +222,21 @@ export function halftoneLineNode(outputNode: any) {
     const grey = res; // greyscale 고정
 
     // blendColour(res, colour.r, blending) = res * blending + colour.r * (1 - blending)
-    const finalR = grey.mul(uBlending).add(original.r.mul(float(1).sub(uBlending)));
-    const finalG = grey.mul(uBlending).add(original.g.mul(float(1).sub(uBlending)));
-    const finalB = grey.mul(uBlending).add(original.b.mul(float(1).sub(uBlending)));
+    const finalR = grey
+      .mul(uBlending)
+      .add(original.r.mul(float(1).sub(uBlending)));
+    const finalG = grey
+      .mul(uBlending)
+      .add(original.g.mul(float(1).sub(uBlending)));
+    const finalB = grey
+      .mul(uBlending)
+      .add(original.b.mul(float(1).sub(uBlending)));
 
     return vec4(finalR, finalG, finalB, float(1));
   })();
 
   return {
     node,
-    uniforms: { uRadius, uAngle, uWidth, uHeight, uBlending }
+    uniforms: { uRadius, uAngle, uWidth, uHeight, uBlending },
   };
 }

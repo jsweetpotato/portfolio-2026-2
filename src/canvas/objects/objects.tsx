@@ -1,4 +1,5 @@
-import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
+import { useFrame, type ThreeEvent } from "@react-three/fiber";
+import { useGLTF } from "@react-three/drei";
 
 import Coffee from "./Coffee";
 import Computer from "./Computer";
@@ -8,7 +9,7 @@ import Floor from "./Floor";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import { useCallback, useRef } from "react";
 import { MathUtils } from "three/webgpu";
-import type { UniformLike } from "@/types";
+import type { InteractiveRegistration } from "@/types";
 
 import Duck from "./Duck";
 import Book from "./Book";
@@ -36,22 +37,29 @@ export default function Objects() {
   const setHovered = useInteractionStore((s) => s.setHovered);
   const select = useInteractionStore((s) => s.select);
 
-  const uniforms = useRef<Record<string, { scaleProgress: UniformLike; opacityProgress: UniformLike }>>({});
-  const register = useCallback((name: string, u: UniformLike, u2: UniformLike) => {
-    uniforms.current[name] = { scaleProgress: u, opacityProgress: u2 };
+  const registrations = useRef<Record<string, InteractiveRegistration>>({});
+  const register = useCallback((name: string, registration: InteractiveRegistration) => {
+    registrations.current[name] = registration;
   }, []);
 
   useFrame((_, dt) => {
     const hovered = useInteractionStore.getState().hovered;
     const selected = useInteractionStore.getState().selected;
 
-    for (const [name, u] of Object.entries(uniforms.current)) {
+    for (const [name, registration] of Object.entries(registrations.current)) {
       const target = hovered === name && !selected ? 1 : 0;
-      u.scaleProgress.value = MathUtils.damp(u.scaleProgress.value, target, 8, dt);
+      registration.scaleProgress.value = MathUtils.damp(registration.scaleProgress.value, target, 8, dt);
 
       const isDimmed = selected && selected !== name;
       const opacityTarget = isDimmed ? 0 : 1;
-      u.opacityProgress.value = MathUtils.damp(u.opacityProgress.value, opacityTarget, 8, dt);
+      registration.opacityProgress.value = MathUtils.damp(registration.opacityProgress.value, opacityTarget, 8, dt);
+
+      registration.groupRef.current?.scale.setScalar(registration.scaleProgress.value * registration.scaleAmount + 1);
+
+      if (registration.selectionProgress) {
+        const selectionTarget = selected === name ? 1 : 0;
+        registration.selectionProgress.value = MathUtils.damp(registration.selectionProgress.value, selectionTarget, 8, dt);
+      }
     }
 
     if (!objRef.current) return;
@@ -89,7 +97,7 @@ export default function Objects() {
   const click = useCallback(
     (name: string) => (e: ThreeEvent<MouseEvent>) => {
       // 이 오브젝트가 현재 흐려진(사실상 안 보이는) 상태인지 확인
-      const u = uniforms.current[name];
+      const u = registrations.current[name];
       const isDimmed = u && u.opacityProgress.value < 0.15; // 임계값
 
       if (isDimmed) {
@@ -108,7 +116,7 @@ export default function Objects() {
     onPointerOver: over(name),
     onPointerOut: out,
     onClick: click(name),
-    register: (u: UniformLike, u2: UniformLike) => register(name, u, u2)
+    register: (registration: InteractiveRegistration) => register(name, registration)
   });
 
   return (
@@ -122,7 +130,6 @@ export default function Objects() {
   );
 }
 
-// useGLTF.preload("/models/duck2.glb");
-// useGLTF.preload("/models/books2.glb");
-// useGLTF.preload("/models/coffee2.glb");
-// useGLTF.preload("/models/computer2.glb");
+useGLTF.preload("/models/books2.glb");
+useGLTF.preload("/models/coffee2.glb");
+useGLTF.preload("/models/computer2.glb");

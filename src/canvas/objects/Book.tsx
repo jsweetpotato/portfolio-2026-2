@@ -6,6 +6,7 @@ import { useGLTF, useTexture } from "@react-three/drei";
 import { useInteractiveObject } from "@/hooks/useInteractiveObject";
 import createShadowMaterial from "./materials/shadowMat";
 import ObjectLabel from "@/components/ObjectLabel";
+import { disposeReplacedMaterials, trackReplacedMaterials } from "./materialUtils";
 
 export default function Book({ register, ...handlers }: Props) {
   const aoMap = useTexture("/images/ao_book.webp");
@@ -16,23 +17,25 @@ export default function Book({ register, ...handlers }: Props) {
     aoMap.flipY = false;
     aoMap.needsUpdate = true;
   }, [aoMap]);
-  const { groupRef, center, opacityProgress } = useInteractiveObject(scene, register);
+  const { groupRef, center, opacityProgress } = useInteractiveObject(
+    scene,
+    register,
+  );
 
   useEffect(() => {
+    const replacedMaterials = new Set<THREE.Material>();
+
     scene.traverse((v) => {
       if (v instanceof THREE.Mesh) {
+        trackReplacedMaterials(replacedMaterials, v.material);
+
         if (v.name === "shadow") {
-          const mat = createShadowMaterial(opacityProgress as THREE.UniformNode<"float", number>, shadowMap);
+          const mat = createShadowMaterial(
+            opacityProgress as THREE.UniformNode<"float", number>,
+            shadowMap,
+          );
           v.raycast = () => {};
           v.material = mat;
-        } else if (v.name === "eye") {
-          const old = v.material as THREE.MeshStandardMaterial;
-          const nodeMat = new THREE.MeshStandardNodeMaterial();
-          nodeMat.color.copy(old.color);
-          nodeMat.roughness = old.roughness;
-          nodeMat.metalness = old.metalness;
-          nodeMat.transparent = true;
-          nodeMat.opacityNode = opacityProgress; // 흐림 연결
         } else {
           v.castShadow = true;
           v.receiveShadow = true;
@@ -50,6 +53,8 @@ export default function Book({ register, ...handlers }: Props) {
         }
       }
     });
+
+    disposeReplacedMaterials(replacedMaterials);
   }, []);
 
   // return <InteractiveModel url={"/models/coffee2.glb"} shadow="/shadow_coffee.png"  register={register} onMesh={onMesh} {...handlers} />;

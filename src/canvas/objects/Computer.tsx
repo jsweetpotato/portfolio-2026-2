@@ -5,11 +5,11 @@ import type { Props } from "@/types";
 import * as THREE from "three/webgpu";
 import { useInteractionStore, useProjectStore } from "@/store/useInteractionStore";
 import { uniform } from "three/tsl";
-import { useFrame } from "@react-three/fiber";
 import { useInteractiveObject } from "@/hooks/useInteractiveObject";
 import { useGLTF, useTexture } from "@react-three/drei";
 import createShadowMaterial from "./materials/shadowMat";
 import ObjectLabel from "@/components/ObjectLabel";
+import { disposeReplacedMaterials, trackReplacedMaterials } from "./materialUtils";
 
 const VIDEO_LIST = ["/videos/grass_fixed.mp4", "/videos/healthyP_fixed.mp4", "/videos/grass_fixed.mp4"];
 
@@ -35,7 +35,7 @@ function getSharedVideo() {
 }
 
 export default function Computer({ register, ...handlers }: Props) {
-  const selected = useInteractionStore((s) => s.selected);
+  const isProjectSelected = useInteractionStore((s) => s.selected === "project");
   const idx = useProjectStore((s) => s.idx);
 
   const screenTex = useRef(getSharedVideo());
@@ -44,24 +44,25 @@ export default function Computer({ register, ...handlers }: Props) {
   const aoMap = useTexture("/images/ao_computer.webp");
   const shadowMap = useTexture("/images/shadow_computer.webp");
   const { scene } = useGLTF("/models/computer2.glb");
-  const { groupRef, center, opacityProgress } = useInteractiveObject(scene, register);
-
-  useFrame((_, dt) => {
-    const target = selected === "project" ? 1 : 0;
-    swipeProgress.current.value = THREE.MathUtils.damp(swipeProgress.current.value, target, 8, dt);
+  const { groupRef, center, opacityProgress } = useInteractiveObject(scene, register, {
+    selectionProgress: swipeProgress.current
   });
 
   useEffect(() => {
     const video = screenTex.current.source.data as HTMLVideoElement;
     const newSrc = VIDEO_LIST[idx];
 
-    // 이미 같은 소스면 스킵
-    if (video.src.endsWith(newSrc)) return;
+    if (!video.src.endsWith(newSrc)) {
+      video.src = newSrc;
+      video.load();
+    }
 
-    video.src = newSrc;
-    video.load();
-    video.play().catch(() => {});
-  }, [idx]);
+    if (isProjectSelected) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  }, [idx, isProjectSelected]);
 
   useEffect(() => {
     aoMap.flipY = false;
@@ -69,8 +70,12 @@ export default function Computer({ register, ...handlers }: Props) {
   }, [aoMap]);
 
   useEffect(() => {
+    const replacedMaterials = new Set<THREE.Material>();
+
     scene.traverse((v) => {
       if (v instanceof THREE.Mesh) {
+        trackReplacedMaterials(replacedMaterials, v.material);
+
         if (v.name === "shadow") {
           const mat = createShadowMaterial(opacityProgress as THREE.UniformNode<"float", number>, shadowMap);
           v.raycast = () => {};
@@ -78,8 +83,6 @@ export default function Computer({ register, ...handlers }: Props) {
         } else if (v.name === "screen") {
           v.material = createscreenMat(opacityProgress, swipeProgress.current, screenTex);
           v.receiveShadow = true;
-          // 초기 재생
-          (screenTex.current.source.data as HTMLVideoElement).play().catch(() => {});
         } else {
           v.castShadow = true;
           v.receiveShadow = true;
@@ -96,6 +99,8 @@ export default function Computer({ register, ...handlers }: Props) {
         }
       }
     });
+
+    disposeReplacedMaterials(replacedMaterials);
   }, []);
 
   return (

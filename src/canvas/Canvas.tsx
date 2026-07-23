@@ -3,7 +3,7 @@ import * as THREE from "three/webgpu";
 import { Canvas } from "@react-three/fiber";
 import { color } from "three/tsl";
 
-import { Suspense } from "react";
+import { Suspense, type ComponentProps } from "react";
 
 import { PostProcessing } from "./Postprocessing";
 import Objects from "./objects/objects";
@@ -12,7 +12,6 @@ import { useSceneStore } from "@/store/useSceneStore";
 import ResizeHandler from "@/utils/ResizeHandler";
 import A11yButtons from "@/components/A11yButtons";
 import Particle from "./objects/Particle";
-import { Environment } from "@react-three/drei";
 import CameraRig from "./CameraRig";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -20,23 +19,16 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 const CONTENT_WIDTH = 20;
 const CONTENT_HEIGHT = 10;
 
-const aspect = window.innerWidth / window.innerHeight;
-const contentAspect = CONTENT_WIDTH / CONTENT_HEIGHT;
-
-// let camWidth: number;
-// let camHeight: number;
-
-// if (aspect > contentAspect) {
-//   camHeight = CONTENT_HEIGHT / 2;
-//   camWidth = camHeight * aspect;
-// } else {
-//   camWidth = CONTENT_WIDTH / 2;
-//   camHeight = camWidth / aspect;
-// }
+type CanvasGlFactory = Extract<NonNullable<ComponentProps<typeof Canvas>["gl"]>, (...args: never[]) => unknown>;
+type CanvasGlProps = Parameters<CanvasGlFactory>[0];
+type WebGPURendererProps = NonNullable<ConstructorParameters<typeof THREE.WebGPURenderer>[0]>;
 
 // gl 함수도 밖으로
-const glInit = async (props: any) => {
-  const gl = new THREE.WebGPURenderer({ ...props });
+const glInit = async (props: CanvasGlProps) => {
+  const powerPreference = props.powerPreference === "default" ? undefined : props.powerPreference;
+  // R3F와 three/webgpu가 서로 다른 OffscreenCanvas 선언을 사용한다.
+  const rendererProps = { ...props, powerPreference } as unknown as WebGPURendererProps;
+  const gl = new THREE.WebGPURenderer(rendererProps);
 
   await gl.init();
   return gl;
@@ -44,14 +36,9 @@ const glInit = async (props: any) => {
 
 // camera도 밖으로
 const cameraConfig = {
-  // left: -camWidth,
-  // right: camWidth,
-  // top: camHeight,
-  // bottom: -camHeight,
   near: 0.01,
   far: 300,
   fov: 20,
-  // position: new THREE.Vector3(0, 7.1542, 20),
   position: new THREE.Vector3(0, 25.1542, 30),
   target: new THREE.Vector3(0, 1.9255, 0),
 };
@@ -93,8 +80,6 @@ export default function WebGLCanvas() {
         />
         <PostProcessing isMobile={isMobile} />
 
-        <Environment preset="forest" environmentIntensity={1} />
-
         <primitive object={halftoneScene}>
           <Suspense fallback={null}>
             <Objects />
@@ -102,7 +87,7 @@ export default function WebGLCanvas() {
           <ambientLight color={"#ffffaa"} intensity={1.5} />
 
           {/* <primitive object={spotLight} position={[-1.3, 12.4, 1.5]} /> */}
-          <primitive object={pointLight} position={[0, 4.4, 0]} />
+          <primitive object={pointLight} position={[0, 4.4, 0]} castShadow={!isMobile} />
           <CameraRig />
         </primitive>
 

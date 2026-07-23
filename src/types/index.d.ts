@@ -1,13 +1,22 @@
-import { Texture } from "three";
+import type { RefObject } from "react";
+import type { Group, Texture } from "three/webgpu";
 
 export type Props = {
   onPointerOver?: (e: ThreeEvent<PointerEvent>) => void;
   onPointerOut?: () => void;
   onClick: (e: ThreeEvent<MouseEvent>) => void;
-  register?: (u: UniformLike, u2: UniformLike) => void;
+  register?: (registration: InteractiveRegistration) => void;
 };
 
 export type UniformLike = { value: number };
+
+export type InteractiveRegistration = {
+  groupRef: RefObject<Group | null>;
+  scaleProgress: UniformLike;
+  opacityProgress: UniformLike;
+  scaleAmount: number;
+  selectionProgress?: UniformLike;
+};
 
 export type InteractiveModel_T = Props & {
   url: string;

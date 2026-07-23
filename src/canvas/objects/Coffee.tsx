@@ -7,6 +7,7 @@ import { useGLTF, useTexture } from "@react-three/drei";
 import { useInteractiveObject } from "@/hooks/useInteractiveObject";
 import createShadowMaterial from "./materials/shadowMat";
 import ObjectLabel from "@/components/ObjectLabel";
+import { disposeReplacedMaterials, trackReplacedMaterials } from "./materialUtils";
 
 export default function Coffee({ register, ...handlers }: Props) {
   const aoMap = useTexture("/images/ao_coffee.webp");
@@ -21,8 +22,12 @@ export default function Coffee({ register, ...handlers }: Props) {
   const { groupRef, center, opacityProgress } = useInteractiveObject(scene, register);
 
   useEffect(() => {
+    const replacedMaterials = new Set<THREE.Material>();
+
     scene.traverse((v) => {
       if (v instanceof THREE.Mesh) {
+        trackReplacedMaterials(replacedMaterials, v.material);
+
         if (v.name === "shadow") {
           const mat = createShadowMaterial(opacityProgress as THREE.UniformNode<"float", number>, shadowMap);
           v.raycast = () => {};
@@ -46,6 +51,8 @@ export default function Coffee({ register, ...handlers }: Props) {
         }
       }
     });
+
+    disposeReplacedMaterials(replacedMaterials);
   }, []);
 
   // return <InteractiveModel url={"/models/coffee2.glb"} shadow="/shadow_coffee.png"  register={register} onMesh={onMesh} {...handlers} />;

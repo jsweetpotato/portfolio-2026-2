@@ -11,11 +11,7 @@ type Props = {
 };
 
 export default function ObjectLabel({ name, label, position = [0, 3, 0] }: Props) {
-  const hovered = useInteractionStore((s) => s.hovered);
-  const selected = useInteractionStore((s) => s.selected);
-
-  // hover됐고, 아무것도 선택 안 된 상태일 때만 표시
-  const show = hovered === name && !selected;
+  const show = useInteractionStore((s) => s.hovered === name && !s.selected);
 
   return (
     <Html position={position} center zIndexRange={[50, 0]} style={{ pointerEvents: "none" }}>

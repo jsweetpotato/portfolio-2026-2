@@ -1,12 +1,16 @@
-import { useEffect, useMemo, useRef, type RefObject } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useEffect, useMemo, useRef } from "react";
 import { uniform } from "three/tsl";
 import * as THREE from "three/webgpu";
 
-import type { UniformLike } from "@/types";
+import type { InteractiveRegistration, UniformLike } from "@/types";
 
-export function useInteractiveObject(scene: THREE.Object3D, register?: (u: UniformLike, u2: UniformLike) => void, opts?: { scaleAmount?: number }) {
-  const { scaleAmount = 0.1 } = opts ?? {};
+interface InteractiveObjectOptions {
+  scaleAmount?: number;
+  selectionProgress?: UniformLike;
+}
+
+export function useInteractiveObject(scene: THREE.Object3D, register?: (registration: InteractiveRegistration) => void, opts?: InteractiveObjectOptions) {
+  const { scaleAmount = 0.1, selectionProgress } = opts ?? {};
   const groupRef = useRef<THREE.Group>(null);
   const progress = useMemo(() => uniform(0), []);
   const progress2 = useMemo(() => uniform(1), []);
@@ -20,13 +24,14 @@ export function useInteractiveObject(scene: THREE.Object3D, register?: (u: Unifo
   }, [scene]);
 
   useEffect(() => {
-    register?.(progress, progress2);
-  }, [progress, progress2, register]);
-
-  useFrame(() => {
-    if (!groupRef.current) return;
-    groupRef.current.scale.setScalar(progress.value * scaleAmount + 1);
-  });
+    register?.({
+      groupRef,
+      scaleProgress: progress,
+      opacityProgress: progress2,
+      scaleAmount,
+      selectionProgress
+    });
+  }, [progress, progress2, register, scaleAmount, selectionProgress]);
 
   return { groupRef, scaleProgress: progress, opacityProgress: progress2, center };
 }

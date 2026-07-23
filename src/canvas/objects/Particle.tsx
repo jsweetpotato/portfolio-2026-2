@@ -1,10 +1,9 @@
 // Particle.tsx
 
 import { useTexture } from "@react-three/drei";
-import { useThree } from "@react-three/fiber";
 
-import { useMemo, useRef } from "react";
-import { cameraProjectionMatrix, cameraViewMatrix, color, float, hash, instanceIndex, mod, pass, positionGeometry, rotate, step, texture, time, uv, vec3, vec4 } from "three/tsl";
+import { useEffect, useMemo } from "react";
+import { cameraProjectionMatrix, cameraViewMatrix, color, float, hash, instanceIndex, mod, positionGeometry, rotate, step, texture, time, uv, vec3, vec4 } from "three/tsl";
 import * as THREE from "three/webgpu";
 
 interface ParticleProps {
@@ -12,8 +11,6 @@ interface ParticleProps {
 }
 
 export default function Particle({ isMobile }: ParticleProps) {
-  const meshRef = useRef<THREE.InstancedMesh>(null);
-
   const dustTexture = useTexture("/images/dust.png");
 
   // 각 파티클의 초기 위치 + 속도 + 위상
@@ -72,5 +69,12 @@ export default function Particle({ isMobile }: ParticleProps) {
     return inst;
   }, [dustTexture, isMobile]);
 
-  return <primitive ref={meshRef} object={mesh} />;
+  useEffect(() => {
+    return () => {
+      mesh.geometry.dispose();
+      mesh.material.dispose();
+    };
+  }, [mesh]);
+
+  return <primitive object={mesh} />;
 }

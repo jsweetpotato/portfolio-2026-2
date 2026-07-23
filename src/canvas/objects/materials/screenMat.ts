@@ -1,5 +1,18 @@
 import type { RefObject } from "react";
-import { float, mrt, dot, texture, time, uv, vec2, mix, sin, color, uniform, defined } from "three/tsl";
+import {
+  float,
+  mrt,
+  dot,
+  texture,
+  time,
+  uv,
+  vec2,
+  mix,
+  sin,
+  color,
+  uniform,
+  defined,
+} from "three/tsl";
 import * as THREE from "three/webgpu";
 
 // 각 비디오를 cache에 미리 넣어놓는다.
@@ -7,8 +20,16 @@ import * as THREE from "three/webgpu";
 
 // 비디오 세개를 미리 한번에 로드하는 것보다 -> 섹렉트 할 떄 로드 -> 이후 한번더 동일한걸 보여주면 캐시된걸 보여줌.
 
-export function createscreenMat(opacityProgress: THREE.Node<"float">, swipeProgress: THREE.UniformNode<"float", number>, screenTex: RefObject<THREE.VideoTexture>) {
-  const screenMat = new THREE.MeshStandardNodeMaterial({ transparent: true, metalness: 0.1, roughness: 0.5 });
+export function createscreenMat(
+  opacityProgress: THREE.Node<"float">,
+  swipeProgress: THREE.UniformNode<"float", number>,
+  screenTex: RefObject<THREE.VideoTexture>,
+) {
+  const screenMat = new THREE.MeshStandardNodeMaterial({
+    transparent: true,
+    metalness: 0.1,
+    roughness: 0.5,
+  });
   const 줄무늬 = uv().y.sub(time).mul(30).fract().sub(0.5).abs();
 
   const scaledUV = uv().sub(0.5).mul(vec2(0.7, -1)).add(0.5);
@@ -18,16 +39,19 @@ export function createscreenMat(opacityProgress: THREE.Node<"float">, swipeProgr
 
   //@ts-ignore
   screenMat.emissiveNode = videoNode.mul(줄무늬).mul(swipeProgress);
-  // const finalColor = blendOverlay(videoScreen, 줄무늬).sub(mask.mul(0.2));
 
-  screenMat.colorNode = mix(color("#cdb4b4"), videoNode, swipeProgress.mul(mask.oneMinus().add(0.5).clamp()));
+  screenMat.colorNode = mix(
+    color("#cdb4b4"),
+    videoNode,
+    swipeProgress.mul(mask.oneMinus().add(0.5).clamp()),
+  );
 
   // @ts-ignore
-  screenMat.mrtNode = mrt({ bloomIntensity: float(swipeProgress.mul(0.35)), screenIntensity: float(swipeProgress.oneMinus()) });
+  screenMat.mrtNode = mrt({
+    bloomIntensity: float(swipeProgress.mul(0.35)),
+    screenIntensity: float(swipeProgress.oneMinus()),
+  });
   screenMat.opacityNode = opacityProgress;
-
-  // screenMat.mrtNode.setBlendMode("bloomIntensity", new THREE.BlendMode(THREE.NormalBlending));
-  // screenMat.mrtNode.setBlendMode("screenIntensity", new THREE.BlendMode(THREE.NormalBlending));
 
   return screenMat;
 }
