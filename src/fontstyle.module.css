@@ -1,0 +1,47 @@
+.bold {
+  font-family: "Pretendard Bold", "Pretendard Bold Placeholder", system-ui, sans-serif;
+  font-weight: 700;
+}
+.medium {
+  font-family: "Pretendard Medium", "Pretendard Medium Placeholder", sans-serif;
+  font-weight: 500;
+}
+.semibold {
+  font-family: "Pretendard SemiBold", "Pretendard SemiBold Placeholder", system-ui, sans-serif;
+  font-weight: 600;
+}
+
+.title {
+  /* font-family: "Pretendard Bold", "Pretendard Bold Placeholder", system-ui, sans-serif;
+  font-weight: 700; */
+  font-size: 28px;
+  font-style: normal;
+  letter-spacing: -0.03em;
+  line-height: 160%;
+}
+
+.subtitle {
+  /* font-family: "Pretendard SemiBold", "Pretendard SemiBold Placeholder", system-ui, sans-serif; */
+  /* font-weight: 600; */
+  font-size: 20px;
+  font-style: normal;
+  letter-spacing: -0.03em;
+  line-height: 160%;
+}
+
+.paragraph {
+  /* font-family: "Pretendard Medium", "Pretendard Medium Placeholder", sans-serif; */
+  /* font-weight: 500; */
+  font-size: 16px;
+  font-style: normal;
+  letter-spacing: -0.03em;
+  line-height: 150%;
+}
+.small {
+  /* font-family: "Pretendard Medium", "Pretendard Medium Placeholder", sans-serif; */
+  /* font-weight: 500; */
+  font-size: 16px;
+  font-style: normal;
+  letter-spacing: -0.01em;
+  line-height: 160%;
+}

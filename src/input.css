@@ -1,0 +1,193 @@
+@import "tailwindcss";
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+:root {
+  --text: #c1c1c1;
+  --text-o70: #c1c1c1a7;
+  --text-h: #fff;
+
+  width: 100%;
+  min-height: 100dvh;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  color: rgb(48, 37, 15);
+  background-color: beige;
+}
+
+html {
+  color: var(--text);
+}
+* {
+  touch-action: manipulation;
+}
+
+@font-face {
+  font-family: "DungGeun Mo";
+  font-weight: 500;
+  font-display: swap;
+  src:
+    local("Pretendard Bold"),
+    url(/fonts/DungGeunMo.woff2) format("woff2");
+}
+@font-face {
+  font-family: "Terrarum Sans";
+  font-weight: 500;
+  font-display: swap;
+  src:
+    local("Pretendard Bold"),
+    url(/fonts/TerrarumSansBitmap.woff2) format("woff2");
+}
+@font-face {
+  font-family: "Pretendard";
+  font-weight: 700;
+  font-display: swap;
+  src:
+    local("Pretendard Bold"),
+    url(/fonts/Pretendard-Bold.subset.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "Pretendard";
+  font-weight: 600;
+  font-display: swap;
+  src:
+    local("Pretendard SemiBold"),
+    url(/fonts/Pretendard-SemiBold.subset.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "Pretendard";
+  font-weight: 500;
+  font-display: swap;
+  src:
+    local("Pretendard Medium"),
+    url(/fonts/Pretendard-Medium.subset.woff2) format("woff2");
+}
+
+@layer components {
+  .font-large {
+    font-family: "DungGeun Mo", "Pretendard Bold", "Pretendard Bold Placeholder", system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 48px;
+    font-style: normal;
+    letter-spacing: -0.03em;
+    line-height: 160%;
+    text-transform: uppercase;
+  }
+
+  .font-medium {
+    font-family: "D2Coding", "JetBrains Mono", "Consolas", ui-monospace, monospace;
+    font-weight: 600;
+    font-size: 20px;
+    font-style: normal;
+    letter-spacing: -0.03em;
+    line-height: 160%;
+  }
+
+  .font-small {
+    font-family: "Pretendard Medium", "Pretendard Medium Placeholder", sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    font-style: normal;
+    letter-spacing: -0.03em;
+    line-height: 150%;
+  }
+
+  .font-xsmall {
+    font-family: "Pretendard Medium", "Pretendard Medium Placeholder", sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    font-style: normal;
+    letter-spacing: -0.01em;
+    line-height: 160%;
+  }
+
+  .font-mono-sm {
+    font-family: "D2Coding", "JetBrains Mono", "Consolas", ui-monospace, monospace;
+    font-weight: 500;
+    font-size: 14px;
+    letter-spacing: -0.01em;
+    line-height: 160%;
+  }
+
+  .font-mono-xs {
+    font-family: "D2Coding", "JetBrains Mono", "Consolas", ui-monospace, monospace;
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0;
+    line-height: 150%;
+  }
+
+  .layer {
+    background-image: url("/images/Noise.webp");
+    background-repeat: repeat;
+    background-size: 10%;
+  }
+  .fill-btn {
+    position: relative;
+    overflow: hidden;
+    z-index: 0;
+    transition: color 100ms steps(3);
+  }
+  .fill-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: #f5efe2;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 120ms steps(6); /* ⭐ steps로 계단식 채움 */
+    z-index: -1;
+  }
+  .fill-btn:hover:not(:disabled)::before {
+    transform: scaleX(1);
+  }
+  .fill-btn:hover:not(:disabled) {
+    color: #2a251f;
+  }
+  .fill-btn:disabled::before {
+    display: none;
+  }
+  .fill-btn:disabled {
+    opacity: 0.25;
+    cursor: auto;
+  }
+}
+@layer components {
+  .menu-fill-btn {
+    position: relative;
+    overflow: hidden;
+    z-index: 0;
+    transition: color 150ms ease;
+  }
+  .menu-fill-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: #f5efe2;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 200ms steps(6);
+    z-index: -1;
+  }
+  .menu-fill-btn:hover::before {
+    transform: scaleX(1);
+  }
+  .menu-fill-btn:hover {
+    color: #2a251f;
+  }
+}
