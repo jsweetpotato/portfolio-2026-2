@@ -1,6 +1,6 @@
 import { useGLTF, useTexture } from "@react-three/drei";
 
-import { useInteractiveObject } from "@/hooks/useInteractiveObject";
+import { useInteractiveObject } from "@/canvas/objects/useInteractiveObject";
 import { useSceneSetup } from "@/hooks/useSceneSetup";
 
 import type { InteractiveModel_T } from "@/types";

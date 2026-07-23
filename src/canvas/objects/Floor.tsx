@@ -4,7 +4,7 @@ import { useEffect, useMemo } from "react";
 
 import * as THREE from "three/webgpu";
 import { createFloorMat } from "./materials/floorMat";
-import { useSceneStore } from "@/store/useSceneStore";
+import { useSceneStore } from "@/canvas/scene/useSceneStore";
 
 export default function Floor(props: ThreeElements["mesh"]) {
   const pointLight = useSceneStore((s) => s.pointLight);

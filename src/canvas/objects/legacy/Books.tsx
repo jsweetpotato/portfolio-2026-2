@@ -1,4 +1,5 @@
 // Books.tsx
+
 import { useGLTF } from "@react-three/drei";
 import { useInteractiveObject } from "@/hooks/useInteractiveObject";
 import { useSceneSetup } from "@/hooks/useSceneSetup";

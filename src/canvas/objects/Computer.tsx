@@ -5,7 +5,7 @@ import type { Props } from "@/types";
 import * as THREE from "three/webgpu";
 import { useInteractionStore, useProjectStore } from "@/store/useInteractionStore";
 import { uniform } from "three/tsl";
-import { useInteractiveObject } from "@/hooks/useInteractiveObject";
+import { useInteractiveObject } from "@/canvas/objects/useInteractiveObject";
 import { useGLTF, useTexture } from "@react-three/drei";
 import createShadowMaterial from "./materials/shadowMat";
 import ObjectLabel from "@/components/ObjectLabel";

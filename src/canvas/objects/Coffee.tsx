@@ -4,7 +4,7 @@ import createSteamMat from "./materials/steamMat";
 import type { Props } from "@/types";
 import * as THREE from "three/webgpu";
 import { useGLTF, useTexture } from "@react-three/drei";
-import { useInteractiveObject } from "@/hooks/useInteractiveObject";
+import { useInteractiveObject } from "@/canvas/objects/useInteractiveObject";
 import createShadowMaterial from "./materials/shadowMat";
 import ObjectLabel from "@/components/ObjectLabel";
 import { disposeReplacedMaterials, trackReplacedMaterials } from "./materialUtils";

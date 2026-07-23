@@ -1,6 +1,9 @@
 import type * as THREE from "three/webgpu";
 
-export function trackReplacedMaterials(materials: Set<THREE.Material>, material: THREE.Material | THREE.Material[]) {
+export function trackReplacedMaterials(
+  materials: Set<THREE.Material>,
+  material: THREE.Material | THREE.Material[],
+) {
   if (Array.isArray(material)) {
     material.forEach((item) => materials.add(item));
     return;

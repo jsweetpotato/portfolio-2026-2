@@ -3,7 +3,7 @@ import { useInteractionStore } from "@/store/useInteractionStore";
 import * as THREE from "three/webgpu";
 import { useEffect, useRef } from "react";
 import { button, folder, useControls } from "leva";
-import { EASINGS } from "@/utils/math";
+import { EASINGS } from "@/canvas/scene/math";
 
 const CAMERA_VIEWS = {
   default: { pos: new THREE.Vector3(0, 25.15, 30), target: new THREE.Vector3(0, 1.3, 0) },

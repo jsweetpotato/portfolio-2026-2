@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import type { Props } from "@/types";
 import * as THREE from "three/webgpu";
 import { useAnimations, useGLTF, useTexture } from "@react-three/drei";
-import { useInteractiveObject } from "@/hooks/useInteractiveObject";
+import { useInteractiveObject } from "@/canvas/objects/useInteractiveObject";
 import createShadowMaterial from "./materials/shadowMat";
 import ObjectLabel from "@/components/ObjectLabel";
 import type { ThreeEvent } from "@react-three/fiber";
