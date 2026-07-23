@@ -12,9 +12,10 @@ import { useSceneStore } from "@/store/useSceneStore";
 import ResizeHandler from "@/utils/ResizeHandler";
 import A11yButtons from "@/components/A11yButtons";
 import Particle from "./objects/Particle";
-import { Environment, OrthographicCamera } from "@react-three/drei";
+import { Environment } from "@react-three/drei";
 import CameraRig from "./CameraRig";
 import { useInteractionStore } from "@/store/useInteractionStore";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 const CONTENT_WIDTH = 20;
 const CONTENT_HEIGHT = 10;
@@ -22,23 +23,22 @@ const CONTENT_HEIGHT = 10;
 const aspect = window.innerWidth / window.innerHeight;
 const contentAspect = CONTENT_WIDTH / CONTENT_HEIGHT;
 
-let camWidth: number;
-let camHeight: number;
+// let camWidth: number;
+// let camHeight: number;
 
-if (aspect > contentAspect) {
-  camHeight = CONTENT_HEIGHT / 2;
-  camWidth = camHeight * aspect;
-} else {
-  camWidth = CONTENT_WIDTH / 2;
-  camHeight = camWidth / aspect;
-}
+// if (aspect > contentAspect) {
+//   camHeight = CONTENT_HEIGHT / 2;
+//   camWidth = camHeight * aspect;
+// } else {
+//   camWidth = CONTENT_WIDTH / 2;
+//   camHeight = camWidth / aspect;
+// }
 
 // gl 함수도 밖으로
 const glInit = async (props: any) => {
   const gl = new THREE.WebGPURenderer({ ...props });
 
   await gl.init();
-  gl.setSize(window.innerWidth + 2, window.innerHeight);
   return gl;
 };
 
@@ -53,7 +53,7 @@ const cameraConfig = {
   fov: 20,
   // position: new THREE.Vector3(0, 7.1542, 20),
   position: new THREE.Vector3(0, 25.1542, 30),
-  target: new THREE.Vector3(0, 1.9255, 0)
+  target: new THREE.Vector3(0, 1.9255, 0),
 };
 
 export default function WebGLCanvas() {
@@ -61,14 +61,13 @@ export default function WebGLCanvas() {
   const halftoneScene = useSceneStore((s) => s.halftoneScene);
   const layerScene = useSceneStore((s) => s.layerScene);
   const select = useInteractionStore((s) => s.select);
-
-  console.log("rendering canvas");
+  const isMobile = useIsMobile();
 
   return (
     <>
       <Canvas
         gl={glInit}
-        shadows={"basic"}
+        shadows={isMobile ? false : "basic"}
         // orthographic
         dpr={[1, 1]}
         camera={cameraConfig}
@@ -85,10 +84,14 @@ export default function WebGLCanvas() {
           inset: 0,
           maxWidth: "none",
           maxHeight: "none",
-          zIndex: 0
-        }}>
-        <ResizeHandler contentWidth={CONTENT_WIDTH} contentHeight={CONTENT_HEIGHT} />
-        <PostProcessing />
+          zIndex: 0,
+        }}
+      >
+        <ResizeHandler
+          contentWidth={CONTENT_WIDTH}
+          contentHeight={CONTENT_HEIGHT}
+        />
+        <PostProcessing isMobile={isMobile} />
 
         <Environment preset="forest" environmentIntensity={1} />
 
@@ -104,7 +107,7 @@ export default function WebGLCanvas() {
         </primitive>
 
         <primitive object={layerScene}>
-          <Particle />
+          <Particle isMobile={isMobile} />
         </primitive>
       </Canvas>
 

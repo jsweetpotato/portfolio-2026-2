@@ -22,7 +22,12 @@ const HDRI_PRESETS = {
 const HDRI_BASE_URL = "https://raw.githubusercontent.com/pmndrs/drei-assets/456060a26bbeb8fdf79326f224b6d99b8bcce736/hdri/";
 
 const focusWorld = uniform(new THREE.Vector3(0, 0, 0));
-export function PostProcessing() {
+
+interface PostProcessingProps {
+  isMobile: boolean;
+}
+
+export function PostProcessing({ isMobile }: PostProcessingProps) {
   const { gl, camera, size } = useThree();
   const pipelineRef = useRef<THREE.RenderPipeline | null>(null);
   const uniformsRef = useRef<any>(null);
@@ -91,8 +96,6 @@ export function PostProcessing() {
     const bloomIntensityNode = haltfToneScenePass.getTextureNode("bloomIntensity");
     const screenIntensityNode = haltfToneScenePass.getTextureNode("screenIntensity");
 
-    const bloomPass = bloom(outputNode.mul(bloomIntensityNode), 0.5, 0.3, 0.1);
-
     const { node, uniforms } = halftoneLineNode(outputNode);
     uniforms.uWidth.value = size.width;
     uniforms.uHeight.value = size.height;
@@ -106,7 +109,7 @@ export function PostProcessing() {
     const baseColor = mix(outputNode.rgb, halftoneColor.rgb, screenIntensityNode.r);
 
     // 알파로 마스킹해서 배경 위에 얹기
-    const scene = baseColor.add(bloomPass);
+    const scene = isMobile ? baseColor : baseColor.add(bloom(outputNode.mul(bloomIntensityNode), 0.5, 0.3, 0.1));
 
     const finalColor = scene.add(premult);
     // const finalColor = vec4(scene.rgb, layerScenePass.a);
@@ -118,7 +121,7 @@ export function PostProcessing() {
     return () => {
       if (pipelineRef.current) pipelineRef.current = null;
     };
-  }, [halftoneScene, layerScene]);
+  }, [halftoneScene, isMobile, layerScene]);
 
   // ✅ renderPriority 1 → R3F 자동 렌더 끄고 pipeline으로 렌더
   useFrame(() => {
