@@ -3,7 +3,23 @@
 import { useTexture } from "@react-three/drei";
 
 import { useEffect, useMemo } from "react";
-import { cameraProjectionMatrix, cameraViewMatrix, color, float, hash, instanceIndex, mod, positionGeometry, rotate, step, texture, time, uv, vec3, vec4 } from "three/tsl";
+import {
+  cameraProjectionMatrix,
+  cameraViewMatrix,
+  color,
+  float,
+  hash,
+  instanceIndex,
+  mod,
+  positionGeometry,
+  rotate,
+  step,
+  texture,
+  time,
+  uv,
+  vec3,
+  vec4,
+} from "three/tsl";
 import * as THREE from "three/webgpu";
 
 interface ParticleProps {
@@ -17,7 +33,7 @@ export default function Particle({ isMobile }: ParticleProps) {
 
   const mesh = useMemo(() => {
     const geometry = new THREE.PlaneGeometry(0.2, 0.2, 1, 1);
-    const mat = new THREE.MeshBasicNodeMaterial();
+    const mat = new THREE.NodeMaterial();
 
     const count = isMobile ? 100 : 400;
 
@@ -41,27 +57,31 @@ export default function Particle({ isMobile }: ParticleProps) {
     const x = isMobile
       ? baseX
       : baseX.add(
-          time
-            .mul(0.5)
-            .add(seed.mul(6.28))
-            .sin()
-            .mul(seed3.mul(1.5).add(0.5))
+          time.mul(0.5).add(seed.mul(6.28)).sin().mul(seed3.mul(1.5).add(0.5)),
         );
 
     const centerView = cameraViewMatrix.mul(vec4(x, y, baseZ, 1.0));
 
-    const randSize = isMobile ? float(0.45) : seed3.mul(0.4).add(0.3);
+    const randSize = seed3.mul(0.4).add(0.3);
     const localOffset = isMobile
       ? vec3(positionGeometry.xy, 0.0)
-      : rotate(vec3(positionGeometry.xy, 0.0), vec3(0, 0, seed3.mul(Math.PI * 2)));
+      : rotate(
+          vec3(positionGeometry.xy, 0.0),
+          vec3(0, 0, seed3.mul(Math.PI * 2)),
+        );
 
-    const billboardView = centerView.xyz.add(vec3(localOffset.xy.mul(randSize), 0.0));
+    const billboardView = centerView.xyz.add(
+      vec3(localOffset.xy.mul(randSize), 0.0),
+    );
 
     mat.vertexNode = cameraProjectionMatrix.mul(vec4(billboardView, 1.0));
 
     const dustMap = texture(dustTexture, uv());
 
-    mat.colorNode = baseZ.remap(-40, 20, 0, 1).mul(dustMap.a).mul(color("#ffeccf"));
+    mat.colorNode = baseZ
+      .remap(-40, 20, 0, 1)
+      .mul(dustMap.a)
+      .mul(color("#ffeccf"));
     mat.alphaTestNode = step(dustMap.a, 0.02);
 
     const inst = new THREE.InstancedMesh(geometry, mat, count);

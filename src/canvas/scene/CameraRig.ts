@@ -6,11 +6,27 @@ import { button, folder, useControls } from "leva";
 import { EASINGS } from "@/canvas/scene/math";
 
 const CAMERA_VIEWS = {
-  default: { pos: new THREE.Vector3(0, 25.15, 30), target: new THREE.Vector3(0, 1.3, 0) },
-  playground: { pos: new THREE.Vector3(1.97, 4, 14.0), target: new THREE.Vector3(-3, 1, -3.41) },
-  project: { pos: new THREE.Vector3(0, 5.97, 5), target: new THREE.Vector3(-1.5, 3.17, -2.92) },
-  aboutme: { pos: new THREE.Vector3(2.6, 5.55, 13.84), target: new THREE.Vector3(3.93, -1.02, 0.0) },
-  contact: { pos: new THREE.Vector3(8, 5, 10), target: new THREE.Vector3(3, 2, 0) }
+  default: {
+    pos: new THREE.Vector3(0, 25.15, 30), //  desktop
+    // pos: new THREE.Vector3(0, 13.15, 20), // mobile
+    target: new THREE.Vector3(0, 1.7, 0),
+  },
+  playground: {
+    pos: new THREE.Vector3(1.97, 4, 14.0),
+    target: new THREE.Vector3(-3, 1, -3.41),
+  },
+  project: {
+    pos: new THREE.Vector3(0, 5.97, 5),
+    target: new THREE.Vector3(-1.5, 3.17, -2.92),
+  },
+  aboutme: {
+    pos: new THREE.Vector3(-10.5, 6.55, 24),
+    target: new THREE.Vector3(8, 3.5, 0.0),
+  },
+  contact: {
+    pos: new THREE.Vector3(5.3, 8.35, 9),
+    target: new THREE.Vector3(6, 3.5, 0),
+  },
 } as const;
 
 const BASE_ASPECT = 16 / 9;
@@ -21,7 +37,6 @@ const range = 10;
 const DURATION = 0.8; // 전환 시간(초) — 들어가든 나오든 동일
 
 export default function CameraRig() {
-  const selected = useInteractionStore((s) => s.selected);
   const { camera, size } = useThree();
 
   const look = useRef(CAMERA_VIEWS.default.target.clone());
@@ -77,7 +92,10 @@ export default function CameraRig() {
     //   return;
     // }
 
-    const key = (selected && selected in CAMERA_VIEWS ? selected : "default") as ViewKey;
+    const selected = useInteractionStore.getState().selected;
+    const key = (
+      selected && selected in CAMERA_VIEWS ? selected : "default"
+    ) as ViewKey;
     const view = CAMERA_VIEWS[key];
 
     // 뷰가 바뀌면 전환 시작

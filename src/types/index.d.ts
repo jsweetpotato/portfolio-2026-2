@@ -14,6 +14,7 @@ export type InteractiveRegistration = {
   groupRef: RefObject<Group | null>;
   scaleProgress: UniformLike;
   opacityProgress: UniformLike;
+  selectionProgress: UniformLike;
   scaleAmount: number;
   selectionProgress?: UniformLike;
 };
@@ -21,7 +22,10 @@ export type InteractiveRegistration = {
 export type InteractiveModel_T = Props & {
   url: string;
   aoMap?: Texture;
-  onMesh?: (mesh: THREE.Mesh, opacityProgress: THREE.UniformNode<"float", number>) => void;
+  onMesh?: (
+    mesh: THREE.Mesh,
+    opacityProgress: THREE.UniformNode<"float", number>,
+  ) => void;
   shadow: string;
 };
 

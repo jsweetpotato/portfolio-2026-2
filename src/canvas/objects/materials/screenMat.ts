@@ -38,18 +38,19 @@ export function createscreenMat(
   const mask = dot(uv().mul(2).sub(1), uv().mul(2).sub(1)).clamp();
 
   //@ts-ignore
-  screenMat.emissiveNode = videoNode.mul(줄무늬).mul(swipeProgress);
+  screenMat.emissiveNode = videoNode.mul(줄무늬).mul(swipeProgress.oneMinus());
 
   screenMat.colorNode = mix(
     color("#cdb4b4"),
     videoNode,
-    swipeProgress.mul(mask.oneMinus().add(0.5).clamp()),
+    // swipeProgress.oneMinus().mul(mask.oneMinus().add(0.5)),
+    swipeProgress.oneMinus(),
   );
 
   // @ts-ignore
   screenMat.mrtNode = mrt({
-    bloomIntensity: float(swipeProgress.mul(0.35)),
-    screenIntensity: float(swipeProgress.oneMinus()),
+    bloomIntensity: float(swipeProgress.oneMinus().mul(0.35)),
+    screenIntensity: float(swipeProgress),
   });
   screenMat.opacityNode = opacityProgress;
 

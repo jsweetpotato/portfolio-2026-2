@@ -12,7 +12,8 @@ import { MathUtils } from "three/webgpu";
 import type { InteractiveRegistration } from "@/types";
 
 import Duck from "./Duck";
-import Book from "./Book";
+import About from "./About";
+import { playZoomIn } from "@/audio/useSelectionZoomAudio";
 
 // 선택 시 정면으로 와야 하는 목표 각도(라디안). 0 = 카메라가 원래 바라보던 정면 기준
 // 오브젝트가 그룹 내에서 실제 배치된 위치의 각도(atan2(x, z))와 맞춰서 값을 조정하세요.
@@ -20,7 +21,7 @@ const FRONT_ANGLE: Record<string, number> = {
   playground: 0,
   aboutme: Math.PI / 2,
   project: 0,
-  contact: Math.PI / 3
+  contact: Math.PI / 3,
 };
 
 // 최단 경로로 회전하도록 각도 차이를 -PI ~ PI 범위로 정규화
@@ -38,9 +39,12 @@ export default function Objects() {
   const select = useInteractionStore((s) => s.select);
 
   const registrations = useRef<Record<string, InteractiveRegistration>>({});
-  const register = useCallback((name: string, registration: InteractiveRegistration) => {
-    registrations.current[name] = registration;
-  }, []);
+  const register = useCallback(
+    (name: string, registration: InteractiveRegistration) => {
+      registrations.current[name] = registration;
+    },
+    [],
+  );
 
   useFrame((_, dt) => {
     const hovered = useInteractionStore.getState().hovered;
@@ -48,18 +52,35 @@ export default function Objects() {
 
     for (const [name, registration] of Object.entries(registrations.current)) {
       const target = hovered === name && !selected ? 1 : 0;
-      registration.scaleProgress.value = MathUtils.damp(registration.scaleProgress.value, target, 8, dt);
+      registration.scaleProgress.value = MathUtils.damp(
+        registration.scaleProgress.value,
+        target,
+        8,
+        dt,
+      );
 
+      // opacity
       const isDimmed = selected && selected !== name;
       const opacityTarget = isDimmed ? 0 : 1;
-      registration.opacityProgress.value = MathUtils.damp(registration.opacityProgress.value, opacityTarget, 8, dt);
+      registration.opacityProgress.value = MathUtils.damp(
+        registration.opacityProgress.value,
+        opacityTarget,
+        8,
+        dt,
+      );
 
-      registration.groupRef.current?.scale.setScalar(registration.scaleProgress.value * registration.scaleAmount + 1);
+      registration.groupRef.current?.scale.setScalar(
+        registration.scaleProgress.value * registration.scaleAmount + 1,
+      );
 
-      if (registration.selectionProgress) {
-        const selectionTarget = selected === name ? 1 : 0;
-        registration.selectionProgress.value = MathUtils.damp(registration.selectionProgress.value, selectionTarget, 8, dt);
-      }
+      // selected progress
+      const selectionTarget = selected === name ? 0 : 1;
+      registration.selectionProgress.value = MathUtils.damp(
+        registration.selectionProgress.value,
+        selectionTarget,
+        8,
+        dt,
+      );
     }
 
     if (!objRef.current) return;
@@ -86,7 +107,7 @@ export default function Objects() {
       setHovered(name);
       document.body.style.cursor = "pointer";
     },
-    []
+    [],
   );
 
   const out = useCallback(() => {
@@ -97,6 +118,7 @@ export default function Objects() {
   const click = useCallback(
     (name: string) => (e: ThreeEvent<MouseEvent>) => {
       // 이 오브젝트가 현재 흐려진(사실상 안 보이는) 상태인지 확인
+      playZoomIn();
       const u = registrations.current[name];
       const isDimmed = u && u.opacityProgress.value < 0.15; // 임계값
 
@@ -109,19 +131,20 @@ export default function Objects() {
       e.stopPropagation();
       select(name);
     },
-    [select]
+    [select],
   );
 
   const bind = (name: string) => ({
     onPointerOver: over(name),
     onPointerOut: out,
     onClick: click(name),
-    register: (registration: InteractiveRegistration) => register(name, registration)
+    register: (registration: InteractiveRegistration) =>
+      register(name, registration),
   });
 
   return (
     <group ref={objRef}>
-      <Book {...bind("aboutme")} />
+      <About {...bind("aboutme")} />
       <Duck {...bind("playground")} />
       <Computer {...bind("project")} />
       <Coffee {...bind("contact")} />
@@ -130,6 +153,6 @@ export default function Objects() {
   );
 }
 
-useGLTF.preload("/models/books2.glb");
+useGLTF.preload("/models/model.glb");
 useGLTF.preload("/models/coffee2.glb");
 useGLTF.preload("/models/computer2.glb");

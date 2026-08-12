@@ -1,6 +1,7 @@
 import { useThree } from "@react-three/fiber";
 import { useRef, useEffect } from "react";
 import { OrthographicCamera } from "three/webgpu";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 // ResizeHandler.tsx
 interface ResizeHandlerProps {
@@ -8,8 +9,12 @@ interface ResizeHandlerProps {
   contentHeight: number;
 }
 
-export default function ResizeHandler({ contentWidth, contentHeight }: ResizeHandlerProps) {
+export default function ResizeHandler({
+  contentWidth,
+  contentHeight,
+}: ResizeHandlerProps) {
   const { gl, camera, size } = useThree();
+  const isMobile = useIsMobile();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -39,13 +44,14 @@ export default function ResizeHandler({ contentWidth, contentHeight }: ResizeHan
       }
 
       gl.setSize(size.width, size.height);
-      gl.setPixelRatio(1);
+      // 모바일은 고DPR 기기에서 선명도를 위해 최대 2배까지, 데스크톱은 1배 유지
+      gl.setPixelRatio(isMobile ? 2 : 1);
     }, 100);
 
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [size, gl, camera, contentWidth, contentHeight]);
+  }, [size, gl, camera, contentWidth, contentHeight, isMobile]);
 
   return null;
 }

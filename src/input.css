@@ -7,10 +7,14 @@ body {
   width: 100%;
   height: 100%;
   overflow-x: clip;
+  /* 세이프에어리어/노치 틈이 흰색으로 비치지 않도록 캔버스 가장자리 톤과 맞춤 */
+  background-color: #514b47;
 }
 
 :root {
-  --text: #c1c1c1;
+  --custom-white: #f5efe2;
+  --custom-brown: #2a251f;
+  --custom-brown-light: #30250f;
   --text-o70: #c1c1c1a7;
   --text-h: #fff;
 
@@ -24,16 +28,21 @@ body {
 }
 
 ::selection {
-  color: rgb(48, 37, 15);
+  color: #30250f;
   background-color: beige;
 }
 
 html {
-  color: var(--text);
+  color: var(--custom-white);
 }
-* {
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+/* * {
   touch-action: manipulation;
-}
+} */
 
 @font-face {
   font-family: "DungGeun Mo";
@@ -78,65 +87,93 @@ html {
     url(/fonts/Pretendard-Medium.subset.woff2) format("woff2");
 }
 
+/*
+  타이포 유틸 — clamp(min, calc(기준 + vw), max)로 mobile→tablet→desktop 유동 스케일.
+  min/max는 각각 390px / 1440px 뷰포트에서 의도한 크기.
+*/
+@utility font-display {
+  font-family: "DungGeun Mo", "Pretendard", system-ui, sans-serif;
+  font-weight: 700;
+  font-style: normal;
+  font-size: clamp(1.75rem, calc(1.1rem + 2.4vw), 3rem);
+  line-height: 1.25;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+@utility font-heading {
+  font-family: "DungGeun Mo", "Pretendard", system-ui, sans-serif;
+  font-weight: 600;
+  font-style: normal;
+  font-size: clamp(1.125rem, calc(0.85rem + 1.4vw), 2rem);
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+}
+
+@utility font-subheading {
+  font-family: "DungGeun Mo", "Pretendard", system-ui, sans-serif;
+  font-weight: 600;
+  font-style: normal;
+  font-size: clamp(1rem, calc(0.9rem + 0.5vw), 1.25rem);
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+}
+
+@utility font-body {
+  font-family: "Pretendard", system-ui, sans-serif;
+  font-weight: 500;
+  font-style: normal;
+  font-size: clamp(0.875rem, calc(0.8rem + 0.25vw), 1rem);
+  line-height: 1.65;
+  letter-spacing: -0.02em;
+}
+
+@utility font-caption {
+  font-family: "Pretendard", system-ui, sans-serif;
+  font-weight: 500;
+  font-style: normal;
+  font-size: clamp(0.75rem, calc(0.7rem + 0.2vw), 0.875rem);
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+}
+
+@utility font-code {
+  font-family:
+    "D2Coding", "JetBrains Mono", "Consolas", ui-monospace, monospace;
+  font-weight: 500;
+  font-style: normal;
+  font-size: clamp(0.8125rem, calc(0.75rem + 0.35vw), 1rem);
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+}
+
+@utility font-code-sm {
+  font-family:
+    "D2Coding", "JetBrains Mono", "Consolas", ui-monospace, monospace;
+  font-weight: 400;
+  font-style: normal;
+  font-size: clamp(0.75rem, calc(0.7rem + 0.28vw), 0.875rem);
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+}
+
+@utility font-code-xs {
+  font-family:
+    "D2Coding", "JetBrains Mono", "Consolas", ui-monospace, monospace;
+  font-weight: 400;
+  font-style: normal;
+  font-size: clamp(0.6875rem, calc(0.65rem + 0.14vw), 0.75rem);
+  line-height: 1.5;
+  letter-spacing: 0.03em;
+}
+
 @layer components {
-  .font-large {
-    font-family:
-      "DungGeun Mo", "Pretendard Bold", "Pretendard Bold Placeholder",
-      system-ui, sans-serif;
-    font-weight: 700;
-    font-size: 48px;
-    font-style: normal;
-    letter-spacing: -0.03em;
-    line-height: 160%;
-    text-transform: uppercase;
+  .page-container {
+    @apply w-[45%] ml-auto pt-8 pb-40 pr-6 lg:pr-12 text-(--custom-white);
   }
 
-  .font-medium {
-    font-family:
-      "D2Coding", "JetBrains Mono", "Consolas", ui-monospace, monospace;
-    font-weight: 600;
-    font-size: 20px;
-    font-style: normal;
-    letter-spacing: -0.03em;
-    line-height: 160%;
-  }
-
-  .font-small {
-    font-family:
-      "Pretendard Medium", "Pretendard Medium Placeholder", sans-serif;
-    font-weight: 500;
-    font-size: 16px;
-    font-style: normal;
-    letter-spacing: -0.03em;
-    line-height: 150%;
-  }
-
-  .font-xsmall {
-    font-family:
-      "Pretendard Medium", "Pretendard Medium Placeholder", sans-serif;
-    font-weight: 500;
-    font-size: 16px;
-    font-style: normal;
-    letter-spacing: -0.01em;
-    line-height: 160%;
-  }
-
-  .font-mono-sm {
-    font-family:
-      "D2Coding", "JetBrains Mono", "Consolas", ui-monospace, monospace;
-    font-weight: 500;
-    font-size: 14px;
-    letter-spacing: -0.01em;
-    line-height: 160%;
-  }
-
-  .font-mono-xs {
-    font-family:
-      "D2Coding", "JetBrains Mono", "Consolas", ui-monospace, monospace;
-    font-weight: 500;
-    font-size: 12px;
-    letter-spacing: 0;
-    line-height: 150%;
+  .page-nav {
+    @apply fixed w-[45%] z-10 backdrop-blur-sm flex items-center justify-between font-code-xs;
   }
 
   .layer {
@@ -144,32 +181,72 @@ html {
     background-repeat: repeat;
     background-size: 10%;
   }
+
   .fill-btn {
     position: relative;
     overflow: hidden;
     z-index: 0;
+    background-color: var(--custom-brown) / 90;
+    backdrop-filter: blur(7px);
     transition: color 100ms steps(3);
   }
   .fill-btn::before {
     content: "";
     position: absolute;
     inset: 0;
-    background: #f5efe2;
+    background: var(--custom-white);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform 120ms steps(6); /* ⭐ steps로 계단식 채움 */
     z-index: -1;
   }
-  .fill-btn:hover:not(:disabled)::before {
-    transform: scaleX(1);
+
+  @media (hover: hover) {
+    .fill-btn:hover:not(:disabled)::before {
+      transform: scaleX(1);
+    }
+    .fill-btn:hover:not(:disabled) {
+      color: var(--custom-brown);
+    }
   }
-  .fill-btn:hover:not(:disabled) {
-    color: #2a251f;
-  }
+
   .fill-btn:disabled::before {
     display: none;
   }
   .fill-btn:disabled {
+    opacity: 0.25;
+    cursor: auto;
+  }
+
+  .fill-a {
+    position: relative;
+    overflow: hidden;
+    z-index: 0;
+    transition: color 100ms steps(3);
+  }
+  .fill-a::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgb(203 253 161);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 120ms steps(6); /* ⭐ steps로 계단식 채움 */
+    z-index: -1;
+  }
+  @media (hover: hover) {
+    .fill-a:hover:not(:disabled)::before {
+      transform: scaleX(1);
+    }
+    .fill-a:hover:not(:disabled) {
+      color: var(--custom-brown);
+    }
+  }
+
+  .fill-a:disabled::before {
+    display: none;
+  }
+  .fill-a:disabled {
     opacity: 0.25;
     cursor: auto;
   }
@@ -185,7 +262,7 @@ html {
     content: "";
     position: absolute;
     inset: 0;
-    background: #f5efe2;
+    background: var(--custom-white);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform 200ms steps(6);
@@ -195,6 +272,6 @@ html {
     transform: scaleX(1);
   }
   .menu-fill-btn:hover {
-    color: #2a251f;
+    color: var(--custom-brown);
   }
 }

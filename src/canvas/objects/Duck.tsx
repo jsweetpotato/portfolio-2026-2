@@ -1,111 +1,96 @@
 import { useCallback, useEffect, useRef } from "react";
-import type { Props } from "@/types";
-import * as THREE from "three/webgpu";
+
 import { useAnimations, useGLTF, useTexture } from "@react-three/drei";
-import { useInteractiveObject } from "@/canvas/objects/useInteractiveObject";
-import createShadowMaterial from "./materials/shadowMat";
-import ObjectLabel from "@/components/ObjectLabel";
 import type { ThreeEvent } from "@react-three/fiber";
-import { useInteractionStore, usePlaygroundStore } from "@/store/useInteractionStore";
-import createHologramMat from "./materials/hologramMat";
-import { uniform } from "three/tsl";
-import { disposeReplacedMaterials, trackReplacedMaterials } from "./materialUtils";
+import * as THREE from "three/webgpu";
+import { mrt } from "three/tsl";
+
+import type { Props } from "@/types";
+import { playActionSfx } from "@/audio/actionSfx";
+import { useInteractiveObject } from "@/canvas/objects/useInteractiveObject";
+import ObjectLabel from "@/components/ObjectLabel";
+import {
+  useInteractionStore,
+  usePlaygroundStore,
+} from "@/store/useInteractionStore";
+
+import createShadowMaterial from "./materials/shadowMat";
+import {
+  disposeReplacedMaterials,
+  trackReplacedMaterials,
+} from "./materialUtils";
 
 const FADE = 0.4;
+const QUACK = "/sounds/duck-quack.mp3";
 
 export default function Duck({ register, onClick, ...handlers }: Props) {
-  // --- Refs ---
-  const idleAnime = useRef<THREE.AnimationAction[]>([]);
-  const actionAnime = useRef<THREE.AnimationAction[]>([]);
-  const isPlaygroundRef = useRef(false);
-  const swipeProgress = useRef(uniform(0));
+  const idleActions = useRef<THREE.AnimationAction[]>([]);
+  const clipActions = useRef<THREE.AnimationAction[]>([]);
 
-  // --- Store & Hooks ---
   const isPlayground = useInteractionStore((s) => s.selected === "playground");
   const { scene, animations } = useGLTF("/models/duck_anime.glb");
   const { actions, mixer } = useAnimations(animations, scene);
-  const { groupRef, center, opacityProgress } = useInteractiveObject(scene, register, {
-    selectionProgress: swipeProgress.current
-  });
+  const { groupRef, center, opacityProgress, selectionProgress } =
+    useInteractiveObject(scene, register);
   const setIdx = usePlaygroundStore((s) => s.setIdx);
+  const triggerDuckAnimation = usePlaygroundStore(
+    (s) => s.triggerDuckAnimation,
+  );
 
-  // --- Textures ---
-  const [aoMap, shadowMap] = useTexture(["/images/ao_duck2.webp", "/images/shadow_duck2.webp"]);
+  const [aoMap, shadowMap] = useTexture([
+    "/images/ao_duck2.webp",
+    "/images/shadow_duck2.webp",
+  ]);
 
-  // 최신 selected 값 동기화
   useEffect(() => {
-    isPlaygroundRef.current = isPlayground;
-  }, [isPlayground]);
+    const idle: THREE.AnimationAction[] = [];
+    const clips: THREE.AnimationAction[] = [];
 
-  // 텍스처 초기 세팅 (로드 완료 시 1회)
-  useEffect(() => {
-    aoMap.flipY = false;
-    aoMap.needsUpdate = true;
-  }, [aoMap]);
-
-  // --- Animation Setup ---
-  useEffect(() => {
-    idleAnime.current = [];
-    actionAnime.current = [];
-
-    Object.entries(actions).forEach(([name, action]) => {
-      if (!action) return;
-
-      // 'action'이라는 이름이 포함된 경우 1회 재생 설정
+    for (const [name, action] of Object.entries(actions)) {
+      if (!action) continue;
       if (name.toLowerCase().includes("action")) {
         action.setLoop(THREE.LoopOnce, 1);
         action.clampWhenFinished = true;
-        actionAnime.current.push(action);
+        clips.push(action);
       } else {
-        // 나머지는 Idle(반복)로 분류
         action.setLoop(THREE.LoopRepeat, Infinity);
-        idleAnime.current.push(action);
+        idle.push(action);
       }
-    });
+    }
+
+    idleActions.current = idle;
+    clipActions.current = clips;
 
     return () => {
-      Object.values(actions).forEach((a) => a?.stop());
+      for (const a of Object.values(actions)) a?.stop();
     };
   }, [actions]);
 
-  // --- Playback Controllers ---
   const playIdle = useCallback(() => {
-    // 액션이 재생 중이 아닐 때 중복 실행 방지
-    if (idleAnime.current.some((a) => a.isRunning())) return;
-
-    actionAnime.current.forEach((a) => a.fadeOut(FADE));
-    idleAnime.current.forEach((a) => {
-      a.enabled = true; // Three.js 버그 방지 1
+    if (idleActions.current.some((a) => a.isRunning())) return;
+    clipActions.current.forEach((a) => a.fadeOut(FADE));
+    idleActions.current.forEach((a) => {
+      a.enabled = true;
       a.setEffectiveTimeScale(1);
-      a.setEffectiveWeight(1); // Three.js 버그 방지 2 (강제 가중치 복구)
-      a.reset();
-      a.fadeIn(FADE);
-      a.play();
+      a.setEffectiveWeight(1);
+      a.reset().fadeIn(FADE).play();
     });
   }, []);
 
   const playAction = useCallback(() => {
-    idleAnime.current.forEach((a) => a.fadeOut(FADE));
-    actionAnime.current.forEach((a) => {
+    idleActions.current.forEach((a) => a.fadeOut(FADE));
+    clipActions.current.forEach((a) => {
       a.enabled = true;
-      a.reset();
-      a.fadeIn(FADE);
-      a.play();
+      a.reset().fadeIn(FADE).play();
     });
   }, []);
 
-  const stopAll = useCallback(() => {
-    Object.values(actions).forEach((a) => a?.fadeOut(FADE));
-    // isActionPlaying.current = false;
-  }, [actions]);
-
-  // --- Event Listeners ---
   useEffect(() => {
-    if (!mixer) return;
     const onFinished = (e: { action: THREE.AnimationAction }) => {
-      // Action 트랙 중 하나가 끝났을 때만 실행하며,
-      // isActionPlaying이 true일 때만 playIdle을 호출하여 다중 콜백 스팸을 방지합니다.
-      if (actionAnime.current.includes(e.action) && isPlaygroundRef.current) {
+      if (
+        clipActions.current.includes(e.action) &&
+        useInteractionStore.getState().selected === "playground"
+      ) {
         playIdle();
       }
     };
@@ -113,59 +98,65 @@ export default function Duck({ register, onClick, ...handlers }: Props) {
     return () => mixer.removeEventListener("finished", onFinished);
   }, [mixer, playIdle]);
 
-  // 선택 상태 변경에 따른 애니메이션 제어
   useEffect(() => {
-    if (isPlayground) {
-      playIdle();
-    } else {
-      stopAll();
-    }
-  }, [isPlayground]);
+    if (isPlayground) playIdle();
+    else for (const a of Object.values(actions)) a?.fadeOut(FADE);
+  }, [isPlayground, playIdle, actions]);
 
-  // --- Material Assignment ---
   useEffect(() => {
-    const replacedMaterials = new Set<THREE.Material>();
+    aoMap.flipY = false;
+    aoMap.needsUpdate = true;
+
+    const replaced = new Set<THREE.Material>();
+    const template = new THREE.MeshStandardNodeMaterial({ transparent: true });
+    template.opacityNode = opacityProgress;
+    template.mrtNode = mrt({
+      screenIntensity: selectionProgress.add(0.4).clamp(),
+    });
 
     scene.traverse((v) => {
       if (!(v instanceof THREE.Mesh)) return;
-      trackReplacedMaterials(replacedMaterials, v.material);
+      trackReplacedMaterials(replaced, v.material);
 
       if (v.name === "shadow") {
-        const mat = createShadowMaterial(opacityProgress as THREE.UniformNode<"float", number>, shadowMap);
         v.raycast = () => {};
-        v.material = mat;
-      } else {
-        v.castShadow = true;
-        v.receiveShadow = true;
-
-        const old = v.material as THREE.MeshStandardMaterial;
-        const nodeMat = createHologramMat(opacityProgress, swipeProgress.current);
-
-        // 속성 복사
-        nodeMat.color.copy(old.color);
-        nodeMat.roughness = old.roughness;
-        nodeMat.metalness = old.metalness;
-        nodeMat.transparent = true;
-        nodeMat.aoMap = aoMap;
-        nodeMat.aoMapIntensity = 0.6;
-
-        v.material = nodeMat;
+        v.material = createShadowMaterial(
+          opacityProgress as THREE.UniformNode<"float", number>,
+          shadowMap,
+        );
+        return;
       }
+
+      const old = v.material as THREE.MeshStandardMaterial;
+      const nodeMat = template.clone();
+      nodeMat.color.copy(old.color);
+      nodeMat.roughness = old.roughness;
+      nodeMat.metalness = old.metalness;
+      nodeMat.aoMap = aoMap;
+      nodeMat.aoMapIntensity = 0.6;
+      v.material = nodeMat;
     });
 
-    disposeReplacedMaterials(replacedMaterials);
+    disposeReplacedMaterials(replaced);
   }, []);
 
   const handleClick = useCallback(
     (e: ThreeEvent<MouseEvent>) => {
-      onClick?.(e);
+      // Capture before onClick selects playground.
+      const alreadyIn =
+        useInteractionStore.getState().selected === "playground";
 
-      if (!isPlaygroundRef.current) return;
+      onClick?.(e);
+      // 첫 진입은 navigation 연출을 쓰고, 이미 playground일 때만 spit을 재생한다
+      if (!alreadyIn) return;
+
+      triggerDuckAnimation();
       e.stopPropagation();
+      playActionSfx(QUACK);
       playAction();
-      setIdx(Math.floor(Math.random() * 5) + 1);
+      setIdx(Math.floor(Math.random() * 6));
     },
-    [onClick, playAction, setIdx]
+    [onClick, playAction, setIdx, triggerDuckAnimation],
   );
 
   return (
@@ -173,7 +164,8 @@ export default function Duck({ register, onClick, ...handlers }: Props) {
       <group position={[-center.x, -center.y, -center.z]}>
         <primitive object={scene} onClick={handleClick} {...handlers} />
       </group>
-      <ObjectLabel label="playground" name="playground" />
+
+      <ObjectLabel label="playground" name="playground" position={[2, 5, 0]} />
     </group>
   );
 }

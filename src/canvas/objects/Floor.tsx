@@ -14,11 +14,11 @@ export default function Floor(props: ThreeElements["mesh"]) {
     tex.wrapS = THREE.RepeatWrapping;
     tex.wrapT = THREE.RepeatWrapping;
     tex.needsUpdate = true;
-  }, [tex]);
+  }, []);
 
   const mat = useMemo(() => {
     return createFloorMat(pointLight, tex);
-  }, [pointLight, tex]);
+  }, []);
 
   return (
     <mesh name="floor" rotation-x={-Math.PI / 2}>

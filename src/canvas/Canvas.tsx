@@ -3,7 +3,7 @@ import * as THREE from "three/webgpu";
 import { Canvas } from "@react-three/fiber";
 import { color } from "three/tsl";
 
-import { Suspense, type ComponentProps } from "react";
+import { Suspense, useMemo, type ComponentProps } from "react";
 
 import { PostProcessing } from "@/canvas/scene/PostProcessing";
 import Objects from "@/canvas/objects/Objects";
@@ -43,13 +43,13 @@ const glInit = async (props: CanvasGlProps) => {
   return gl;
 };
 
-// camera도 밖으로
 const cameraConfig = {
   near: 0.1,
   far: 300,
   fov: 20,
-  position: new THREE.Vector3(0, 25.1542, 30),
-  target: new THREE.Vector3(0, 1.9255, 0),
+  // position: new THREE.Vector3(0, 25.1542, 30),
+  // position: new THREE.Vector3(0, 5.1542, 1),
+  // target: new THREE.Vector3(0, 1.9255, 0),
 };
 
 export default function WebGLCanvas() {
@@ -58,26 +58,23 @@ export default function WebGLCanvas() {
   const layerScene = useSceneStore((s) => s.layerScene);
   const select = useInteractionStore((s) => s.select);
   const isMobile = useIsMobile();
-
   return (
     <>
       <Canvas
         gl={glInit}
-        shadows={isMobile ? false : "basic"}
         // orthographic
-        dpr={[1, 1]}
+        // 모바일 고DPR 기기에서 halftone 라인이 뭉개지지 않도록 최대 2배까지 허용
+        dpr={[1, 2]}
         camera={cameraConfig}
-        onCreated={({ scene, camera }) => {
-          camera.lookAt(0, 1.3, 0);
-          camera.updateProjectionMatrix();
+        onCreated={({ scene }) => {
           scene.backgroundNode = color("black");
         }}
         onPointerMissed={() => select(null)}
         style={{
-          width: "100dvw",
-          height: "100dvh",
           position: "fixed",
           inset: 0,
+          width: "100vw",
+          height: "100vh",
           maxWidth: "none",
           maxHeight: "none",
           zIndex: 0,
@@ -93,7 +90,7 @@ export default function WebGLCanvas() {
           <Suspense fallback={null}>
             <Objects />
           </Suspense>
-          <ambientLight color={"#ffffaa"} intensity={1.5} />
+          <ambientLight color={"#FFEDCC"} intensity={1.6} />
 
           {/* <primitive object={spotLight} position={[-1.3, 12.4, 1.5]} /> */}
           <primitive

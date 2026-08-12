@@ -24,7 +24,9 @@ export function PostProcessing({ isMobile }: PostProcessingProps) {
 
   const halftoneScene = useSceneStore((s) => s.halftoneScene);
   const layerScene = useSceneStore((s) => s.layerScene);
-  const isProjectSelected = useInteractionStore((s) => s.selected === "project");
+  const bloomSelected = useInteractionStore(
+    (s) => s.selected === "project" || s.selected === "contact",
+  );
 
   // pipeline은 한 번만 생성 (scene/camera 바뀔 때만 재생성)
   useEffect(() => {
@@ -68,10 +70,10 @@ export function PostProcessing({ isMobile }: PostProcessingProps) {
     const screenIntensityNode =
       haltfToneScenePass.getTextureNode("screenIntensity");
 
-    const node = isMobile
-      ? mobileHalftoneLineNode(outputNode)
-      : optimizedHalftoneLineNode(outputNode);
-    // const node = mobileHalftoneLineNode(outputNode);
+    // const node = isMobile
+    //   ? mobileHalftoneLineNode(outputNode)
+    //   : optimizedHalftoneLineNode(outputNode);
+    const node = mobileHalftoneLineNode(outputNode);
 
     const halftoneColor = mix(color("#514b47"), color("#d4ce9c"), node.r);
     const baseColor = mix(
@@ -81,10 +83,10 @@ export function PostProcessing({ isMobile }: PostProcessingProps) {
     );
 
     const baseFinalColor = baseColor.add(premult);
-    const baseOutputNode = vec4(
-      baseFinalColor.rgb,
-      outputNode.a,
-    ).renderOutput(THREE.ACESFilmicToneMapping, THREE.SRGBColorSpace);
+    const baseOutputNode = vec4(baseFinalColor.rgb, outputNode.a).renderOutput(
+      THREE.ACESFilmicToneMapping,
+      THREE.SRGBColorSpace,
+    );
 
     if (basePipelineRef.current) {
       basePipelineRef.current.outputNode = baseOutputNode;
@@ -104,10 +106,9 @@ export function PostProcessing({ isMobile }: PostProcessingProps) {
       ).renderOutput(THREE.ACESFilmicToneMapping, THREE.SRGBColorSpace);
     }
 
-    const projectSelected =
-      useInteractionStore.getState().selected === "project";
+    const selected = useInteractionStore.getState().selected;
     activePipelineRef.current =
-      !isMobile && projectSelected
+      !isMobile && (selected === "project" || selected === "contact")
         ? bloomPipelineRef.current
         : basePipelineRef.current;
   }, [camera, halftoneScene, isMobile, layerScene]);
@@ -118,12 +119,13 @@ export function PostProcessing({ isMobile }: PostProcessingProps) {
       bloomFadeOutRef.current = null;
     }
 
+    // bloom outputNode는 !isMobile일 때만 세팅됨 — 빈 파이프라인 render → 파란/깨진 화면
     if (isMobile) {
       activePipelineRef.current = basePipelineRef.current;
       return;
     }
 
-    if (isProjectSelected) {
+    if (bloomSelected) {
       activePipelineRef.current = bloomPipelineRef.current;
       return;
     }
@@ -143,7 +145,7 @@ export function PostProcessing({ isMobile }: PostProcessingProps) {
         bloomFadeOutRef.current = null;
       }
     };
-  }, [isMobile, isProjectSelected]);
+  }, [bloomSelected]);
 
   useFrame(() => {
     activePipelineRef.current?.render();

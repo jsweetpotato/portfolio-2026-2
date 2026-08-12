@@ -41,7 +41,7 @@ export const PLAYGROUND_ITEMS: PlaygroundItem[] = [
     id: 3,
     title: "Cosmetic",
     subtitle: "R3F로 구현한 화장품 소개 데모",
-    description: "Blender 연습으로 만든 화장품을 R3F로 애니메이션과 함께 소개하는 데모 페이지입니다.",
+    description: "Blender로 만든 모델에 애니메이션을 입혀 R3F로 옮겨 본 실험입니다.",
     link: "https://cosmetic-rho.vercel.app/",
     image: "/images/cosmetic.webp",
     video: "/videos/cosmetic.mp4",

@@ -17,6 +17,9 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.3.2
         version: 4.3.2(vite@8.1.0(@types/node@24.13.2)(jiti@2.7.0))
+      howler:
+        specifier: ^2.2.4
+        version: 2.2.4
       lenis:
         specifier: ^1.3.25
         version: 1.3.25(react@19.2.7)
@@ -42,6 +45,9 @@ importers:
         specifier: ^5.0.14
         version: 5.0.14(@types/react@19.2.17)(react@19.2.7)(use-sync-external-store@1.6.0(react@19.2.7))
     devDependencies:
+      '@types/howler':
+        specifier: ^2.2.13
+        version: 2.2.13
       '@types/node':
         specifier: ^24.13.2
         version: 24.13.2
@@ -700,6 +706,9 @@ packages:
   '@types/draco3d@1.4.10':
     resolution: {integrity: sha512-AX22jp8Y7wwaBgAixaSvkoG4M/+PlAcm3Qs4OW8yT9DM4xUpWKeFhLueTAyZF39pviAdcDdeJoACapiAceqNcw==}
 
+  '@types/howler@2.2.13':
+    resolution: {integrity: sha512-40+EBjqIHHrC4VShlz/7i0lBUsE3QkgzZinQQji74Hd8sBkJZUBaT7LWFLK6rcabsDOOQpoMbEJvtaFQwxOu/g==}
+
   '@types/node@24.13.2':
     resolution: {integrity: sha512-fRa09kZTgu8o71KFcDjUFuc7F+dEbZYZmkI0mg5YBTRs0yMKjYHsq/c0urDKeDb+D5qVgXOdFcuu+DZPKOITwA==}
 
@@ -867,6 +876,9 @@ packages:
 
   hls.js@1.6.16:
     resolution: {integrity: sha512-VSIRpLfRwlAAdGL4wiTucx2ScRipo0ed1FBatWkyt832jC4CReKstga6yIhYVwGu9LOBjuX9wzmRMeQdBJtzEA==}
+
+  howler@2.2.4:
+    resolution: {integrity: sha512-iARIBPgcQrwtEr+tALF+rapJ8qSc+Set2GJQl7xT1MQzWaVkFebdJhR3alVlSiUf5U7nAANKuj3aWpwerocD5w==}
 
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
@@ -1827,6 +1839,8 @@ snapshots:
 
   '@types/draco3d@1.4.10': {}
 
+  '@types/howler@2.2.13': {}
+
   '@types/node@24.13.2':
     dependencies:
       undici-types: 7.18.2
@@ -1960,6 +1974,8 @@ snapshots:
   graceful-fs@4.2.11: {}
 
   hls.js@1.6.16: {}
+
+  howler@2.2.4: {}
 
   ieee754@1.2.1: {}
 

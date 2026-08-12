@@ -8,17 +8,17 @@ import type { Props } from "@/types";
 import { useInteractiveObject } from "@/canvas/objects/useInteractiveObject";
 import ObjectLabel from "@/components/ObjectLabel";
 
-import createShadowMaterial from "./materials/shadowMat";
-import createSteamMat from "./materials/steamMat";
+import Model from "../Model";
+import createShadowMaterial from "../materials/shadowMat";
 import {
   disposeReplacedMaterials,
   trackReplacedMaterials,
-} from "./materialUtils";
+} from "../materialUtils";
 
-export default function Coffee({ register, ...handlers }: Props) {
-  const aoMap = useTexture("/images/ao_coffee.webp");
-  const shadowMap = useTexture("/images/shadow_coffee.webp");
-  const { scene } = useGLTF("/models/coffee2.glb");
+export default function Book({ register, ...handlers }: Props) {
+  const aoMap = useTexture("/images/ao_book.webp");
+  const shadowMap = useTexture("/images/shadow_book.webp");
+  const { scene } = useGLTF("/models/books2.glb");
   const { groupRef, center, opacityProgress, selectionProgress } =
     useInteractiveObject(scene, register);
 
@@ -38,11 +38,6 @@ export default function Coffee({ register, ...handlers }: Props) {
           opacityProgress as THREE.UniformNode<"float", number>,
           shadowMap,
         );
-        return;
-      }
-
-      if (v.name === "cha_imagem") {
-        v.material = createSteamMat(opacityProgress, selectionProgress);
         return;
       }
 
@@ -66,9 +61,16 @@ export default function Coffee({ register, ...handlers }: Props) {
   return (
     <group ref={groupRef} position={center}>
       <group position={[-center.x, -center.y, -center.z]}>
-        <primitive object={scene} {...handlers} />
+        <Model
+          selectionProgress={selectionProgress}
+          position={[3.5, 0, 3.5]}
+          rotation-z={-Math.PI * 0.15}
+          scale={2}
+          {...handlers}
+        />
+        {/* <primitive object={scene}  /> */}
       </group>
-      <ObjectLabel label="contact" name="contact" position={[0, 2, 0]} />
+      <ObjectLabel name="aboutme" label="about me" />
     </group>
   );
 }

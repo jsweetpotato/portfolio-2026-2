@@ -1,30 +1,47 @@
+import { useEffect } from "react";
+import { ReactLenis, useLenis } from "lenis/react";
 import WebGLCanvas from "@/canvas/Canvas";
-// import { SiNotion, SiGithub } from "react-icons/si";
 
-import { useInfiniteLenis } from "./hooks/useLenis";
-import Projects from "./pages/projects";
-import Aboutme from "./pages/about";
-import Footer from "./components/Footer";
-import { Playground } from "./pages/playground";
-import Menu from "./components/Menu";
+import { useBackgroundAudio } from "@/audio/useBackgroundAudio";
+import { bakeZoomSfx } from "@/audio/useSelectionZoomAudio";
+import Projects from "@/pages/projects";
+import Aboutme from "@/pages/about";
+import Footer from "@/components/Footer";
+import CheckRotate from "@/components/CheckRotate";
+import { Playground } from "@/pages/playground";
+import Contact from "./pages/contact";
+
+function LenisEffects() {
+  const lenis = useLenis();
+
+  useEffect(() => {
+    if (!lenis) return;
+    const ro = new ResizeObserver(() => lenis.resize());
+    ro.observe(document.body);
+    return () => ro.disconnect();
+  }, [lenis]);
+
+  return null;
+}
 
 export default function App() {
-  useInfiniteLenis({ infinite: false, lerp: 0.1 });
+  useBackgroundAudio();
+  useEffect(() => {
+    void bakeZoomSfx();
+  }, []);
 
   return (
     <>
       <WebGLCanvas />
-      {/* <Menu /> */}
-      <Projects />
-      <Aboutme />
-
-      <Playground />
-      <div id="rotate-message">
-        <span>🔄</span>
-        <p>가로 모드로 회전해주세요</p>
-      </div>
-
-      <div className="layer w-full h-full fixed inset-0  select-none pointer-events-none mix-blend-lighten opacity-3"></div>
+      <ReactLenis root options={{ lerp: 0.1, syncTouch: true }}>
+        <LenisEffects />
+        <Projects />
+        <Aboutme />
+        <Playground />
+      </ReactLenis>
+      <CheckRotate />
+      <div className="layer w-full h-full fixed inset-0 select-none pointer-events-none mix-blend-lighten opacity-3" />
+      <Contact />
       <Footer />
     </>
   );

@@ -9,11 +9,16 @@ interface InteractiveObjectOptions {
   selectionProgress?: UniformLike;
 }
 
-export function useInteractiveObject(scene: THREE.Object3D, register?: (registration: InteractiveRegistration) => void, opts?: InteractiveObjectOptions) {
+export function useInteractiveObject(
+  scene: THREE.Object3D,
+  register?: (registration: InteractiveRegistration) => void,
+  opts?: InteractiveObjectOptions,
+) {
   const { scaleAmount = 0.1, selectionProgress } = opts ?? {};
   const groupRef = useRef<THREE.Group>(null);
   const progress = useMemo(() => uniform(0), []);
   const progress2 = useMemo(() => uniform(1), []);
+  const progress3 = useMemo(() => uniform(0), []);
 
   // 중심 계산 (centered 옵션일 때만)
   const center = useMemo(() => {
@@ -28,10 +33,16 @@ export function useInteractiveObject(scene: THREE.Object3D, register?: (registra
       groupRef,
       scaleProgress: progress,
       opacityProgress: progress2,
+      selectionProgress: progress3,
       scaleAmount,
-      selectionProgress
     });
   }, [progress, progress2, register, scaleAmount, selectionProgress]);
 
-  return { groupRef, scaleProgress: progress, opacityProgress: progress2, center };
+  return {
+    groupRef,
+    scaleProgress: progress,
+    opacityProgress: progress2,
+    selectionProgress: progress3,
+    center,
+  };
 }

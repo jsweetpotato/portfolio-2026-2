@@ -1,4 +1,16 @@
-import { float, lights, mrt, output, texture, uniform, uv, mix, time, color } from "three/tsl";
+import {
+  float,
+  lights,
+  mrt,
+  output,
+  texture,
+  uniform,
+  uv,
+  mix,
+  time,
+  color,
+  vec4,
+} from "three/tsl";
 import * as THREE from "three/webgpu";
 
 export function createFloorMat(light: THREE.Light, tex: THREE.Texture) {
@@ -7,12 +19,15 @@ export function createFloorMat(light: THREE.Light, tex: THREE.Texture) {
   });
   floorMat.lightsNode = lights([light]);
 
-  const map = texture(tex, uv().mul(5).add(time.mul(0.05)));
+  const map = texture(tex, uv().mul(5).add(time.mul(0.05))).r;
 
-  const intensity = uniform(4.2);
+  const utest = uniform(6);
 
-  //@ts-ignore
+  const lit = output.mul(utest);
+  const noise = float(0.55).sub(lit).mul(map).clamp();
 
-  floorMat.outputNode = float(0.55).sub(output.r.mul(6)).mul(map).clamp().add(output.mul(6).clamp()).pow(2);
+  // 최소값 0.1
+  floorMat.outputNode = noise.add(lit).pow(2);
+
   return floorMat;
 }
