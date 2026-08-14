@@ -34,6 +34,7 @@ body {
 
 html {
   color: var(--custom-white);
+  font-size: calc(14px + 0.3vw);
 }
 
 html.lenis,
