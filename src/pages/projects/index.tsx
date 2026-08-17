@@ -53,7 +53,7 @@ const projects = [
     href: "https://cartoon-grass-self.vercel.app/",
     github: "https://github.com/jsweetpotato/grass3",
     blog: "https://resonant-kitchen-b1b.notion.site/grass-1d7f5e642970804fb162cb92412e3976",
-    duration: "2025.12 ~ 2026.03",
+    duration: "2026.2 ~ 진행중",
     description: "고양이가 돌아다니는 푸른 잔디밭",
     contribution: ["디자인 100%", "기획 100%", "개발 100%"],
     fullDescription: [
@@ -81,13 +81,13 @@ const projects = [
     blog: "https://resonant-kitchen-b1b.notion.site/portfolio2026-32af5e642970801db5beef193f1b81cb",
     github: "https://github.com/jsweetpotato/portfolio-2026-2",
 
-    duration: "2026.9 ~ 2026.03",
+    duration: "2026.7 ~ 2026.08",
     description: "3D 포트폴리오 웹사이트",
     contribution: ["디자인 100%", "기획 100%", "개발 100%"],
     fullDescription: [
-      `mrtNode에서 파티클의 alpha를 분리해서 halfToneShader와 함께 적용하려 했지만 서로 블렌딩 되지 않음 -> `,
-      "Chat GPU로 정면과 측면 이미지를 생성해 blender로 로우폴리 모델 제작했습니다.",
-      `파티클이 별도 패스인 건 중요합니다. 씬 자체가 다르기 때문에 MRT로 합칠 수 없고, 전통적인 "패스를 하나 더 돌린다"가 정답인 경우입니다. 반대로 씬 A 안의 오리·컴퓨터·커피는 같은 패스에 있으면서도 서로 다른 후처리를 받습니다. 여기가 MRT가 일하는 지점입니다.`,
+      "mrtNode에서 파티클의 alpha를 분리해 halfToneShader와 함께 적용하려 했지만 서로 블렌딩되지 않음 → 파티클은 씬 자체가 달라 MRT로 합칠 수 없어 패스를 하나 더 돌리는 방식으로 분리",
+      "같은 씬에 있는 오리·컴퓨터·커피는 MRT로 한 패스에서 그리면서 오브젝트마다 서로 다른 후처리 적용",
+      "ChatGPT로 정면·측면 이미지를 생성해 Blender로 로우폴리 모델 제작",
     ],
     tech: [
       "TypeScript",
@@ -106,29 +106,43 @@ const projects = [
   },
   {
     id: 3,
+
     title: "HealthyP",
+
     service: false,
+
     type: "Team",
-    description: "건강한 레시피 커뮤니티 웹 서비스",
+
+    description: "건강한 식단을 위한 레시피 공유 웹 서비스",
+
     duration: "2024.02.19 ~ 2024.03.15",
+
     fullDescription: [
-      "tenstack query를 사용한 무한 스크롤 구현",
-      "zod를 사용한 유효성 검사 구현",
-      "PocketBase를 사용한 데이터 저장 구현",
+      "React Query를 활용한 레시피 데이터 캐싱 및 무한 스크롤 구현",
+      "React Hook Form과 Zod를 활용한 레시피 등록 폼과 validation 구현",
+      "Jotai를 활용한 레시피 작성 상태 관리 및 상태 구조 개선",
+      "PocketBase를 활용한 레시피 데이터 저장 및 조회 기능 구현",
+      "불필요한 리렌더링을 줄이기 위한 컴포넌트 분리 및 구조 개선",
     ],
+
     contribution: ["디자인 50%", "기획 25%", "개발 25%"],
+
     tech: [
-      "React Query",
       "React",
+      "TypeScript",
+      "React Query",
+      "React Hook Form",
+      "Zod",
+      "Jotai",
+      "PocketBase",
       "TailwindCSS",
       "Swiper",
-      "Jotai",
-      "zod",
-      "PocketBase",
       "Vite",
     ],
+
     device: "Mobile",
-    github: "https://github.com/jsweetpotato/healthyP",
+
+    github: "https://github.com/jsweetpotato/HealthyP",
   },
 ];
 
